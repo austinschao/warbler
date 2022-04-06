@@ -1,5 +1,6 @@
 import email
 import os
+from termios import CRTSCTS
 
 from click import password_option
 from dotenv import load_dotenv
@@ -24,7 +25,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
@@ -41,9 +42,19 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-        g.form = CSRFProtectionForm()
+
     else:
         g.user = None
+
+@app.before_request
+def add_csrf_to_g():
+    """ If we're logged in, add CSRF protection form to Flask global """
+
+    if CURR_USER_KEY in session:
+
+        g.csrf_form = CSRFProtectionForm()
+    else:
+        g.csrf_form = None
 
 
 def do_login(user):
@@ -120,11 +131,10 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    # IMPLEMENT THIS AND FIX BUG
-    # DO NOT CHANGE METHOD ON ROUTE
-    form = CSRFProtectionForm()
 
-    if form.validate_on_submit():
+    # needs to match same csrf token from g.form
+
+    if g.form.validate_on_submit():
 
         if g.user:
             do_logout()
@@ -134,7 +144,7 @@ def logout():
         flash("Access unauthorized.", "danger")
         return redirect("/login")
 
-    return render_template('users/login.html', form=form)
+    return render_template('users/login.html')
 
 
 ##############################################################################
@@ -228,18 +238,23 @@ def profile():
             return redirect("/")
 
     form = EditUserForm(obj=g.user)
-    
+
     if form.validate_on_submit():
+
         if User.authenticate(g.user.username, form.password.data):
             g.user.username = form.username.data
             g.user.email = form.email.data
             g.user.image_url = form.image_url.data
-            g.user.header_image_url = form.header_image_url.data 
+            g.user.header_image_url = form.header_image_url.data
             g.user.bio = form.bio.data
+
             db.session.commit()
+
             flash("Successfully updated profile page!", "success")
             return redirect(f"/users/{g.user.id}")
+
         else:
+
             flash("Invalid password.", "danger")
             return redirect("/")
 
@@ -327,8 +342,12 @@ def homepage():
     """
 
     if g.user:
+        following_ids = [following.id for following in g.user.following]
+        following_ids.append(g.user.id)
+
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(following_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
