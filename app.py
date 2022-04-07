@@ -134,7 +134,7 @@ def logout():
 
     # needs to match same csrf token from g.form
 
-    if g.form.validate_on_submit():
+    if g.csrf_form.validate_on_submit():
 
         if g.user:
             do_logout()
@@ -294,7 +294,7 @@ def like_toggle_message(msg_id):
     else:
         new_liked = Likes(user_id = g.user.id, message_id = message.id)
         db.session.commit()
-        flash("successfully ")
+        flash("successfully liked a message! :)", "success")
         return redirect("/")
 
 

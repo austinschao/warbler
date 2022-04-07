@@ -56,6 +56,13 @@
               <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
               <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
               <p>{{ msg.text }}</p>
+              {% if msg.user_id != g.user.id %}
+              <!-- WORK ON THIS TMRW YEAH?! -->
+              <form action="//users/liked/{{ msg.id }}">
+                {{g.csrf_form.hidden_tag()}}
+                <button type="submit"><i class="fa-thin fa-heart"></i></button>
+              </form>
+              {% endif %}
             </div>
           </li>
         {% endfor %}
