@@ -19,6 +19,24 @@
             </span>
             <p>{{ message.text }}</p>
           </div>
+          <!-- like and unlike  -->
+          <a href="#">
+            {% if message not in g.user.messages %}
+            {% if message not in g.user.liked_messages %}
+            <form action="/users/liked/{{ message.id }}" method="POST">
+              {{g.csrf_form.hidden_tag()}}
+              <button type="submit" class="far fa-star"></button>
+            </form>
+            {% endif %}
+
+            {% if message in g.user.liked_messages %}
+            <form action="/users/liked/{{ message.id }}" method="POST">
+              {{g.csrf_form.hidden_tag()}}
+              <button type="submit" class="fas fa-star"></button>
+            </form>
+            {% endif %}
+            {% endif %}
+          </a>
         </li>
 
       {% endfor %}

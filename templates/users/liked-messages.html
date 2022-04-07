@@ -8,17 +8,36 @@
         <li class="list-group-item">
           <a href="/messages/{{ message.id }}" class="message-link"></a>
 
-          <a href="/users/{{ user.id }}">
-            <img src="{{ user.image_url }}" alt="user image" class="timeline-image">
+          <a href="/users/{{ message.user_id }}">
+            <img src="{{ message.user.image_url }}" alt="user image" class="timeline-image">
           </a>
 
           <div class="message-area">
-            <a href="/users/{{ user.id }}">@{{ user.username }}</a>
+            <a href="/users/{{ message.user_id }}">@{{ message.user.username}}</a>
             <span class="text-muted">
               {{ message.timestamp.strftime('%d %B %Y') }}
             </span>
             <p>{{ message.text }}</p>
           </div>
+          <!-- like and unlike  -->
+          <!-- list of warbles to import into other code -->
+          <a href="#">
+            {% if message not in g.user.messages %}
+            {% if message not in g.user.liked_messages %}
+            <form action="/users/liked/{{ message.id }}" method="POST">
+              {{g.csrf_form.hidden_tag()}}
+              <button type="submit" class="far fa-star"></button>
+            </form>
+            {% endif %}
+
+            {% if message in g.user.liked_messages %}
+            <form action="/users/liked/{{ message.id }}" method="POST">
+              {{g.csrf_form.hidden_tag()}}
+              <button type="submit" class="fas fa-star"></button>
+            </form>
+            {% endif %}
+            {% endif %}
+          </a>
         </li>
 
       {% endfor %}
