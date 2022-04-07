@@ -10,7 +10,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectionForm, EditUserForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 load_dotenv()
 
@@ -262,7 +262,44 @@ def profile():
     return render_template('users/edit.html', form=form)
 
 
+@app.get('/users/<int:user_id>/liked_messages')
+def show_liked_messages(user_id):
+    """Show list of liked messages of clicked user."""
+    if not g.user:
+            flash("Access unauthorized.", "danger")
+            return redirect("/")
+    
+    user = User.query.get_or_404(user_id)
+    
+    return render_template("users/liked-messages.html", user=user)
 
+@app.post('/users/liked/<int:msg_id>')
+def like_toggle_message(msg_id):
+    """adds or removes likes in messages and updates db"""
+    if not g.user:
+            flash("Access unauthorized.", "danger")
+            return redirect("/")
+    
+    liked_messages_ids = [message.id for message in g.user.liked_messages]
+    
+    message = Message.query.get_or_404(msg_id)
+
+    if message.id in liked_messages_ids:
+        Likes.query.filter(Likes.message_id == message.id, Likes.user_id == g.user.id).delete()
+
+        #db.session.commit()
+        flash("unliked a message :(", "success")
+
+        return redirect("/")
+    else:
+        new_liked = Likes(user_id = g.user.id, message_id = message.id)
+        db.session.commit()
+        flash("successfully ")
+        return redirect("/")
+
+
+#<i class="fa-thin fa-heart"></i>
+#<i class="fa-duotone fa-heart"></i>
 
 @app.post('/users/delete')
 def delete_user():
@@ -372,3 +409,4 @@ def add_header(response):
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
     response.cache_control.no_store = True
     return response
+
