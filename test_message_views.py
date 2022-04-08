@@ -98,3 +98,19 @@ class MessageViewTestCase(TestCase):
             self.assertIn(f"{test_message.text}", html)
             self.assertIn("testing for show", html)
 
+
+    def test_destroy_message(self):
+        """ Can we delete a message? """
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser_id
+
+        # Creating a test message to delete
+            test_message = Message(text="TestMessage",
+                                    user_id=self.testuser_id)
+
+            db.session.add(test_message)
+            db.session.commit()
+
+        resp = 
