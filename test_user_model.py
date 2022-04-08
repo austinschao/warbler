@@ -9,8 +9,9 @@ import os
 from typing import Type
 from unittest import TestCase
 
-from psycopg2 import IntegrityError
 import sqlalchemy
+
+from sqlalchemy.exc import IntegrityError
 
 from models import db, User, Message, Follows
 
@@ -120,15 +121,12 @@ class UserModelTestCase(TestCase):
 
 
         self.assertIn(test_user, User.query.all())
-
         self.assertNotIn("test4", User.query.all())
-        # write def test with what it does with a clear name (separate)
-        # separe the with asserts
 
     def test_unique_signup(self):
         """ Test for sign up with already existing values """
 
-        with self.assertRaises(sqlalchemy.exc.IntegrityError):
+        with self.assertRaises(IntegrityError):
             already_existing_username = User.signup(email="test3@test.com",
                             username="testuser2",
                             password="HASHED_PASSWORD",
@@ -138,10 +136,12 @@ class UserModelTestCase(TestCase):
     def test_non_null_signup(self):
         """ Test for sign up with an unfilled not nullable field """
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(IntegrityError):
             signup_with_no_img_url = User.signup(email="test4@test.com",
-                            username="testuser4",
-                            password="HASHED_PASSWORD")
+                            username=None,
+                            password="HASHED_PASSWORD",
+                            image_url=""
+                            )
             db.session.commit()
 
     #more function with names separating happy/bad paths
