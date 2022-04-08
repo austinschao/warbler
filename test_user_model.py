@@ -45,14 +45,15 @@ class UserModelTestCase(TestCase):
         self.client = app.test_client()
 
         u1 = User(
-        email="test1@test.com",
-        username="testuser1",
-        password="HASHED_PASSWORD"
+            email="test1@test.com",
+            username="testuser1",
+            password="HASHED_PASSWORD"
         )
+
         u2 = User(
-        email="test2@test.com",
-        username="testuser2",
-        password="HASHED_PASSWORD_2"
+            email="test2@test.com",
+            username="testuser2",
+            password="HASHED_PASSWORD_2"
         )
 
         db.session.add_all([u1, u2])
@@ -89,6 +90,7 @@ class UserModelTestCase(TestCase):
 
         db.session.add(u2_follow_u1)
         db.session.commit()
+
         self.assertEqual(self.u1.is_followed_by(self.u2), True)
         self.assertEqual(self.u2.is_followed_by(self.u1), False)
 
@@ -97,56 +99,62 @@ class UserModelTestCase(TestCase):
         """Tests if user is following another user"""
 
         u2_follow_u1 = Follows(user_being_followed_id=self.u1.id, user_following_id=self.u2.id)
+
         db.session.add(u2_follow_u1)
         db.session.commit()
 
         self.assertEqual(self.u1.is_following(self.u2), False)
         self.assertEqual(self.u2.is_following(self.u1), True)
+        # test length of followers
 
-    
 
     def test_user_model_sign_up(self):
         """Testing for authenticate function"""
+
         test_user = User.signup(email="test3@test.com",
                             username="testuser3",
                             password="HASHED_PASSWORD",
                             image_url="")
-        
+
         db.session.commit()
 
 
         self.assertIn(test_user, User.query.all())
+
         self.assertNotIn("test4", User.query.all())
+        # write def test with what it does with a clear name (separate)
+        # separe the with asserts
+
+    def test_unique_signup(self):
+        """ Test for sign up with already existing values """
+
         with self.assertRaises(sqlalchemy.exc.IntegrityError):
-            failed_unique_value_user = User.signup(email="test3@test.com",
-                            username="testuser3",
+            already_existing_username = User.signup(email="test3@test.com",
+                            username="testuser2",
                             password="HASHED_PASSWORD",
                             image_url="")
             db.session.commit()
+
+    def test_non_null_signup(self):
+        """ Test for sign up with an unfilled not nullable field """
+
         with self.assertRaises(TypeError):
-            failed_non_null_field_user = User.signup(email="test4@test.com",
+            signup_with_no_img_url = User.signup(email="test4@test.com",
                             username="testuser4",
                             password="HASHED_PASSWORD")
             db.session.commit()
 
+    #more function with names separating happy/bad paths
     def test_user_model_authenticate(self):
         """Testing for authenticate function"""
 
+        test_user = User.signup(email="test5@test.com",
+                            username="testuser5",
+                            password="PASSWORD",
+                            image_url="")
 
+        db.session.commit()
 
-
-
-
-
-
-
-# Does the repr method work as expected?
-# Does is_following successfully detect when user1 is following user2?
-# Does is_following successfully detect when user1 is not following user2?
-# Does is_followed_by successfully detect when user1 is followed by user2?
-# Does is_followed_by successfully detect when user1 is not followed by user2?
-# Does User.signup successfully create a new user given valid credentials?
-# Does User.signup fail to create a new user if any of the validations (eg uniqueness, non-nullable fields) fail?
-# Does User.authenticate successfully return a user when given a valid username and password?
-# Does User.authenticate fail to return a user when the username is invalid?
-# Does User.authenticate fail to return a user when the password is invalid?
+        self.assertEqual(User.authenticate(test_user.username, "PASSWORD"), test_user)
+        self.assertEqual(User.authenticate("invalid_username", "PASSWORD"), False)
+        self.assertEqual(User.authenticate(test_user.username, "hahaha"), False)

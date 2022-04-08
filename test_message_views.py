@@ -51,6 +51,12 @@ class MessageViewTestCase(TestCase):
         db.session.commit()
         self.testuser_id = testuser.id
 
+
+    def tearDown(self):
+        """Clean up any fouled transaction."""
+        db.session.rollback()
+
+
     def test_add_message(self):
         """Can use add a message?"""
 
@@ -70,3 +76,25 @@ class MessageViewTestCase(TestCase):
             self.assertEqual(resp.status_code, 302)
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
+
+    def test_show_message(self):
+        """ Can show a message? """
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser_id
+
+            # Creating a test message to show
+            test_message = Message(text="TestMessage",
+                                    user_id=self.testuser_id)
+
+            db.session.add(test_message)
+            db.session.commit()
+
+            resp = c.get(f"/messages/{Message.query.first().id}")
+            html = resp.get_data(as_text = True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(f"{test_message.text}", html)
+            self.assertIn("testing for show", html)
+
