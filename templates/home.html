@@ -58,7 +58,7 @@
               <p>{{ msg.text }}</p>
             </div>
             <!-- like and unlike  -->
-              <a href="#">
+              <a href="#" class="toggle-like-btn">
                 {% if msg not in g.user.messages %}
                   {% if msg not in g.user.liked_messages %}
                   <form action="/users/liked/{{ msg.id }}" method="POST">
