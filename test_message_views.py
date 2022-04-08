@@ -78,14 +78,12 @@ class MessageViewTestCase(TestCase):
             self.assertEqual(msg.text, "Hello")
 
 
-        
+
 
     def test_show_message(self):
         """ Can show a message? """
 
         with self.client as c:
-            with c.session_transaction() as sess:
-                sess[CURR_USER_KEY] = self.testuser_id
 
             # Creating a test message to show
             test_message = Message(text="TestMessage",
@@ -116,10 +114,11 @@ class MessageViewTestCase(TestCase):
             db.session.add(test_message)
             db.session.commit()
 
-        test_message2_id = test_message2.id
+
         resp = c.post(f"/messages/{test_message.id}/delete", follow_redirects=True)
         html = resp.get_data(as_text = True)
-        breakpoint()
-        self.assertIsNone(Message.query.get(test_message.id))
 
-        
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsNone(Message.query.get(test_message.id))
+        self.assertIn("Testing for user profile", html)
+
