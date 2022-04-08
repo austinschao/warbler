@@ -107,6 +107,3 @@ class UserViewTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(session[CURR_USER_KEY], self.testuser.id)
             self.assertIn(f"Hello", html)
-
-
-
