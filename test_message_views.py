@@ -77,6 +77,9 @@ class MessageViewTestCase(TestCase):
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
 
+
+        
+
     def test_show_message(self):
         """ Can show a message? """
 
@@ -113,4 +116,10 @@ class MessageViewTestCase(TestCase):
             db.session.add(test_message)
             db.session.commit()
 
-        resp = 
+        test_message2_id = test_message2.id
+        resp = c.post(f"/messages/{test_message.id}/delete", follow_redirects=True)
+        html = resp.get_data(as_text = True)
+        breakpoint()
+        self.assertIsNone(Message.query.get(test_message.id))
+
+        

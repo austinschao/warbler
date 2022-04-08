@@ -120,7 +120,9 @@ class UserModelTestCase(TestCase):
         db.session.commit()
 
 
-        self.assertIn(test_user, User.query.all())
+        # self.assertIn(test_user, User.query.all()) too expensive
+        # test if username is equal to username I passed 
+        # python string function 
         self.assertNotIn("test4", User.query.all())
 
     def test_unique_signup(self):
