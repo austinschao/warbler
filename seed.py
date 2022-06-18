@@ -2,7 +2,10 @@
 
 from csv import DictReader
 from app import db
-from models import User, Message, Follows, Likes
+from models import User, Message, Follows
+from dotenv import load_dotenv
+
+load_dotenv()
 
 db.drop_all()
 db.create_all()
