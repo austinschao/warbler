@@ -105,5 +105,5 @@ class UserViewTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual(session[CURR_USER_KEY], self.testuser.id)
+            self.assertEqual(session[CURR_USER_KEY], User.query.get(self.testuser_id).id)
             self.assertIn(f"Hello", html)
