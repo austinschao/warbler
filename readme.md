@@ -81,6 +81,19 @@ To run the server:
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+<!-- Features -->
+## Features
+### Jinja
+- Created html emplates to render for user based on the HTTP request
+### WTForms
+- Validated forms on submission
+- Added CSRF protection
+### Flask Session
+-
+### Flask G Object
+
+
+
 
 <!-- ROADMAP -->
 ## Roadmap
